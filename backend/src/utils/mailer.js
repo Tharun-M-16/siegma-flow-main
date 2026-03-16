@@ -1,14 +1,186 @@
 import nodemailer from "nodemailer";
 
 export const sendOTPEmail = async (to, otp) => {
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.resend_api;
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
   const smtpPort = parseInt(process.env.SMTP_PORT || "587", 10);
   const smtpSecure = (process.env.SMTP_SECURE || "").toLowerCase() === "true" || smtpPort === 465;
   const smtpFamily = parseInt(process.env.SMTP_FAMILY || "4", 10);
   const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+  const resendFrom = process.env.RESEND_FROM || process.env.SMTP_FROM || "onboarding@resend.dev";
   const smtpFrom =
     process.env.SMTP_FROM || (smtpUser && smtpUser.includes("@") ? smtpUser : "onboarding@resend.dev");
+
+  const subject = "🔐 Your Admin Login OTP - Siegma Logistics";
+  const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              margin: 0;
+              padding: 20px;
+              background-color: #f5f7fa;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+              -webkit-font-smoothing: antialiased;
+            }
+            .container {
+              max-width: 500px;
+              margin: 0 auto;
+              background: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            }
+            .header {
+              background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+              color: white;
+              padding: 30px 20px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 700;
+            }
+            .header p {
+              margin: 8px 0 0;
+              font-size: 14px;
+              opacity: 0.95;
+            }
+            .content {
+              padding: 30px 24px;
+              text-align: center;
+            }
+            .greeting {
+              font-size: 18px;
+              color: #1f2937;
+              margin-bottom: 8px;
+              font-weight: 600;
+            }
+            .message {
+              color: #6b7280;
+              margin-bottom: 28px;
+              font-size: 15px;
+              line-height: 1.5;
+            }
+            .otp-box {
+              display: inline-block;
+              background: #f3f4f6;
+              border: 2px dashed #d1d5db;
+              border-radius: 12px;
+              padding: 18px 24px;
+              margin: 0 0 24px;
+            }
+            .otp-label {
+              display: block;
+              font-size: 12px;
+              color: #6b7280;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-bottom: 8px;
+            }
+            .otp-code {
+              font-size: 32px;
+              font-weight: 800;
+              letter-spacing: 10px;
+              color: #111827;
+              font-family: 'Courier New', monospace;
+              line-height: 1;
+            }
+            .warning {
+              background: #fef3c7;
+              border-left: 4px solid #f59e0b;
+              padding: 12px 14px;
+              text-align: left;
+              border-radius: 6px;
+              margin-top: 8px;
+              color: #92400e;
+              font-size: 13px;
+              line-height: 1.5;
+            }
+            .footer {
+              border-top: 1px solid #e5e7eb;
+              padding: 20px;
+              text-align: center;
+              color: #9ca3af;
+              font-size: 12px;
+              background: #fafafa;
+            }
+            @media only screen and (max-width: 600px) {
+              body { padding: 10px; }
+              .content { padding: 24px 16px; }
+              .otp-box { width: 100%; padding: 16px 10px; }
+              .otp-code {
+                font-size: 28px;
+                letter-spacing: 8px;
+                white-space: nowrap;
+                display: inline-block;
+                width: 100%;
+                text-align: center;
+              }
+            }
+            @media only screen and (max-width: 420px) {
+              .otp-code {
+                font-size: 24px;
+                letter-spacing: 6px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Siegma Logistics</h1>
+              <p>Secure Admin Verification</p>
+            </div>
+            <div class="content">
+              <div class="greeting">Your OTP is Ready</div>
+              <div class="message">Use the one-time password below to complete your admin login.</div>
+              <div class="otp-box">
+                <span class="otp-label">One-Time Password</span>
+                <span class="otp-code">${otp}</span>
+              </div>
+              <div class="warning">
+                This OTP is valid for <strong>5 minutes</strong> and can only be used once.<br/>
+                If you did not request this login, please ignore this email.
+              </div>
+            </div>
+            <div class="footer">
+              &copy; ${new Date().getFullYear()} Siegma Logistics. All rights reserved.
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+  // Prefer Resend API in production when key is provided; this avoids SMTP routing issues.
+  if (resendApiKey) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `Siegma Logistics <${resendFrom}>`,
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Resend API failed (${response.status}): ${errorText}`);
+    }
+
+    return;
+  }
 
   if (!smtpUser || !smtpPass) {
     const error = new Error("SMTP_USER/SMTP_PASS not configured");
@@ -25,151 +197,8 @@ export const sendOTPEmail = async (to, otp) => {
     secure: smtpSecure,
     family: smtpFamily,
     tls: {
-      servername: smtpHost,
-      rejectUnauthorized: false,
-    },
-    auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-    connectionTimeout: 10000,
-    socketTimeout: 10000,
-    pool: {
-      maxConnections: 5,
-      maxMessages: 100,
-    },
-  });
-
-  const mailOptions = {
-    from: `"Siegma Logistics" <${smtpFrom}>`,
-    to,
-    subject: "🔐 Your Admin Login OTP - Siegma Logistics",
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              margin: 0; 
-              padding: 20px; 
-              background-color: #f5f7fa; 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif; 
-              -webkit-font-smoothing: antialiased;
-            }
-            .container { 
-              max-width: 480px; 
-              margin: 0 auto; 
-              background: white; 
-              border-radius: 14px; 
-              box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-              overflow: hidden;
-            }
-            .header { 
-              background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); 
-              padding: 45px 30px; 
-              text-align: center; 
-            }
-            .header-icon { 
-              font-size: 48px; 
-              margin-bottom: 12px; 
-              display: block; 
-            }
-            .header-title { 
-              color: white; 
-              font-size: 26px; 
-              font-weight: 700; 
-              margin: 0 0 6px 0; 
-            }
-            .header-subtitle { 
-              color: rgba(255,255,255,0.85); 
-              font-size: 13px; 
-              margin: 0; 
-              font-weight: 500; 
-            }
-            .content { 
-              padding: 36px 28px; 
-            }
-            .greeting { 
-              font-size: 15px; 
-              color: #1a1a2e; 
-              font-weight: 600; 
-              margin-bottom: 12px; 
-            }
-            .intro-text { 
-              font-size: 14px; 
-              color: #666; 
-              line-height: 1.6; 
-              margin-bottom: 28px; 
-            }
-            .otp-section-label { 
-              font-size: 11px; 
-              font-weight: 700; 
-              color: #0066cc; 
-              text-transform: uppercase; 
-              letter-spacing: 1.2px; 
-              margin-bottom: 10px; 
-            }
-            .otp-container { 
-              background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%); 
-              border: 2px solid #0066cc; 
-              border-radius: 12px; 
-              padding: 32px 24px; 
-              text-align: center; 
-              margin: 0 0 28px 0; 
-            }
-            .otp-code { 
-              font-size: 42px; 
-              font-weight: 800; 
-              color: #0052a3; 
-              font-family: 'Courier New', 'Courier', monospace; 
-              letter-spacing: 6px; 
-              margin: 0; 
-              word-break: break-all; 
-              line-height: 1.2;
-            }
-            .otp-validity { 
-              font-size: 12px; 
-              color: #0066cc; 
-              font-weight: 600; 
-              margin-top: 12px; 
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              gap: 6px; 
-            }
-            .info-grid { 
-              background-color: #f8fafb; 
-              border: 1px solid #e6eaed; 
-              border-radius: 10px; 
-              padding: 20px; 
-              margin: 24px 0; 
-            }
-            .info-row { 
-              display: flex; 
-              gap: 12px; 
-              margin-bottom: 12px; 
-            }
-            .info-row:last-child { 
-              margin-bottom: 0; 
-            }
-            .info-icon { 
-              font-size: 16px; 
-              min-width: 20px; 
-              text-align: center; 
-            }
-            .info-text { 
-              font-size: 13px; 
-              color: #555; 
-            }
-            .info-text strong { 
-              color: #1a1a2e; 
-              font-weight: 600; 
-            }
-            .security-alert { 
-              background-color: #fff9e6; 
+      subject,
+      html,
               border: 1px solid #ffd54f; 
               border-left: 4px solid #ffc107; 
               border-radius: 8px; 
