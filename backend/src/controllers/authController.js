@@ -118,7 +118,13 @@ export const login = async (req, res) => {
       );
       try {
         await sendOTPEmail(email, otp);
-      } catch (_) { /* OTP logged to console in dev */ }
+        console.log(`✅ OTP sent to database admin: ${email}`);
+      } catch (sendError) {
+        console.error(`❌ OTP send failed for database admin ${email}:`, sendError.message);
+        if (process.env.NODE_ENV === "development") {
+          console.log(`[DEV MODE] OTP for ${email}: ${otp}`);
+        }
+      }
       return res.json({ requiresMFA: true, tempToken });
     }
 
