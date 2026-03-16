@@ -1003,26 +1003,48 @@ const AdminDashboard = () => {
                             </div>
 
                             {/* View Proof Document */}
-                            {request.assignedDriverProof && (
+                            {(request.assignedDriverProof || request.assignedDriverProofUrl) && (
                               <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
                                 <button
                                   onClick={() => {
-                                    // Convert base64 to blob for native browser viewing
-                                    const base64Data = request.assignedDriverProof;
-                                    const [header, data] = base64Data.split(',');
-                                    const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
-                                    const binaryString = atob(data);
-                                    const bytes = new Uint8Array(binaryString.length);
-                                    for (let i = 0; i < binaryString.length; i++) {
-                                      bytes[i] = binaryString.charCodeAt(i);
+                                    const proof = request.assignedDriverProof || '';
+
+                                    // Prefer backend-resolved public URL (Supabase Storage)
+                                    if (request.assignedDriverProofUrl) {
+                                      window.open(request.assignedDriverProofUrl, '_blank');
+                                      return;
                                     }
-                                    const blob = new Blob([bytes], { type: mimeType });
-                                    const blobUrl = URL.createObjectURL(blob);
-                                    const newWindow = window.open(blobUrl, '_blank');
-                                    // Clean up the blob URL after window opens
-                                    if (newWindow) {
-                                      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+                                    // Direct HTTP URL stored in proof field
+                                    if (proof.startsWith('http://') || proof.startsWith('https://')) {
+                                      window.open(proof, '_blank');
+                                      return;
                                     }
+
+                                    // Backward compatibility: base64 data URL
+                                    if (proof.startsWith('data:')) {
+                                      try {
+                                        const [header, data] = proof.split(',');
+                                        if (!data) throw new Error('Missing base64 payload');
+                                        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+                                        const binaryString = atob(data);
+                                        const bytes = new Uint8Array(binaryString.length);
+                                        for (let i = 0; i < binaryString.length; i++) {
+                                          bytes[i] = binaryString.charCodeAt(i);
+                                        }
+                                        const blob = new Blob([bytes], { type: mimeType });
+                                        const blobUrl = URL.createObjectURL(blob);
+                                        const newWindow = window.open(blobUrl, '_blank');
+                                        if (newWindow) {
+                                          setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                                        }
+                                      } catch {
+                                        alert('This proof record is malformed. Please re-upload proof from assignment dialog.');
+                                      }
+                                      return;
+                                    }
+
+                                    alert('Proof file is stored in Supabase Storage. Please open via backend-provided URL.');
                                   }}
                                   className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                                 >
