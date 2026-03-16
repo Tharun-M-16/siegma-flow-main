@@ -1,0 +1,221 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Siegma Logistics Design System */
+    /* Navy blue professional palette with vibrant orange accents */
+    
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Navy Blue - Primary brand color */
+    --primary: 213 56% 24%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Lighter blue for secondary elements */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 213 56% 24%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Orange accent color */
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 213 56% 24%;
+
+    --radius: 0.5rem;
+
+    /* Custom logistics colors */
+    --logistics-navy: 213 56% 24%;
+    --logistics-navy-light: 213 45% 35%;
+    --logistics-navy-dark: 213 60% 18%;
+    --logistics-orange: 24 95% 53%;
+    --logistics-orange-light: 24 95% 63%;
+    --logistics-orange-dark: 24 95% 43%;
+    --logistics-green: 142 71% 45%;
+    --logistics-yellow: 45 93% 47%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(213 56% 24%) 0%, hsl(213 45% 35%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(24 95% 43%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-card: 0 4px 20px -2px rgb(30 58 95 / 0.12);
+    --shadow-button: 0 4px 14px 0 rgb(249 115 22 / 0.39);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 25% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 215 25% 13%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 25% 13%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 215 25% 18%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 215 25% 22%;
+    --input: 215 25% 22%;
+    --ring: 24 95% 53%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .container-logistics {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .card-logistics {
+    @apply bg-card rounded-xl p-6 shadow-[var(--shadow-card)] border border-border/50 transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-1;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-logistics-navy-light bg-clip-text text-transparent;
+  }
+
+  .gradient-accent-text {
+    @apply bg-gradient-to-r from-accent to-logistics-orange-light bg-clip-text text-transparent;
+  }
+
+  .input-logistics {
+    @apply w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200;
+  }
+
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-approved {
+    @apply bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-completed {
+    @apply bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-rejected {
+    @apply bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to { 
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
