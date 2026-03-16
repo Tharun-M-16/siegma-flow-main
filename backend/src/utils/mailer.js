@@ -7,6 +7,8 @@ export const sendOTPEmail = async (to, otp) => {
   const smtpSecure = (process.env.SMTP_SECURE || "").toLowerCase() === "true" || smtpPort === 465;
   const smtpFamily = parseInt(process.env.SMTP_FAMILY || "4", 10);
   const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+  const smtpFrom =
+    process.env.SMTP_FROM || (smtpUser && smtpUser.includes("@") ? smtpUser : "onboarding@resend.dev");
 
   if (!smtpUser || !smtpPass) {
     const error = new Error("SMTP_USER/SMTP_PASS not configured");
@@ -39,7 +41,7 @@ export const sendOTPEmail = async (to, otp) => {
   });
 
   const mailOptions = {
-    from: `"Siegma Logistics" <${smtpUser}>`,
+    from: `"Siegma Logistics" <${smtpFrom}>`,
     to,
     subject: "🔐 Your Admin Login OTP - Siegma Logistics",
     html: `
